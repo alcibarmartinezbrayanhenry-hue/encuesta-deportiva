@@ -153,6 +153,48 @@
     <div class="signature">Encuesta elaborada por Brayan Alcibar</div>
 </div>
 
+<!-- Carga de librerías de Firebase (v10+) -->
+<script type="module">
+  import { initializeApp } from "https://jsdelivr.net";
+  import { getFirestore, doc, onSnapshot, updateDoc, increment, setDoc} from "https://jsdelivr.net";
+
+  // 1. REEMPLAZA ESTO CON TUS CREDENCIALES COPIADAS DE FIREBASE
+  const firebaseConfig = {
+    apiKey: "AIzaSyDCnn6zskVJeUUn5N9VKfk9eFdKz94DZdw",
+    authDomain: "encuesta-deportiva-d8e8a.firebaseapp.com",
+    projectId: "encuesta-deportiva-d8e8a",
+    storageBucket: "encuesta-deportiva-d8e8a",
+    messagingSenderId: "518624866592",
+    appId: "1:518624866592:web:a11bcb4299f7366b1c2745"
+  };
+
+  // 2. Inicialización
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const docRef = doc(db, "encuestas", "votos_equipos");
+
+  // 3. Escuchar votos en TIEMPO REAL
+  onSnapshot(docRef, (docSnap) => {
+    if (docSnap.exists()) {
+      window.votes = docSnap.data(); // Actualiza la variable global
+      if (typeof updateChart === "function") updateChart(); 
+    } else {
+      // Si no existe el documento, lo crea en ceros
+      setDoc(docRef, { madrid: 0, barca: 0 });
+    }
+  });
+
+  // 4. Función global para enviar el voto a la nube
+  window.enviarVotoReal = async (equipo) => {
+    try {
+      await updateDoc(docRef, { [equipo]: increment(1) });
+    } catch (e) {
+      console.error("Error al votar:", e);
+    }
+  };
+</script>
+
+    
 <script>
     const form = document.getElementById('surveyForm');
     const nameInput = document.getElementById('name');
