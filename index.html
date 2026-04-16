@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuesta Deportiva | Brayan Alcibar</title>
+    <style>
+        :root {
+            --grass-green: #1a472a;
+            --field-line: rgba(255, 255, 255, 0.2);
+            --madrid-color: #3a86ff;
+            --barca-color: #a70032;
+            --gold: #ffd700;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: radial-gradient(circle at center, #2d5a27 0%, #1a3a16 100%);
+            color: white;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Contenedor Principal */
+        .stadium-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid var(--gold);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 { text-align: center; text-transform: uppercase; letter-spacing: 2px; color: var(--gold); }
+        .subtitle { text-align: center; font-size: 0.9em; opacity: 0.8; margin-bottom: 25px; }
+
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; }
+
+        input, input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        /* Estilo Radio Buttons Novedoso */
+        .teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+        .team-option {
+            border: 2px solid #444;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .team-option:hover { background: rgba(255,255,255,0.05); }
+        input[type="radio"] { display: none; }
+        
+        input[type="radio"]:checked + .team-option.madrid { border-color: var(--madrid-color); background: rgba(58, 134, 255, 0.2); }
+        input[type="radio"]:checked + .team-option.barca { border-color: var(--barca-color); background: rgba(167, 0, 50, 0.2); }
+
+        /* Errores */
+        .error-msg { color: #ff4d4d; font-size: 0.85em; margin-top: 5px; display: none; }
+
+        /* Botón Enviar */
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 20px;
+        }
+        button:disabled { background: #333; color: #777; cursor: not-allowed; opacity: 0.5; }
+        button:enabled { background: var(--gold); color: black; box-shadow: 0 0 15px var(--gold); }
+
+        /* Gráfico */
+        .chart-container { margin-top: 40px; border-top: 1px solid #333; padding-top: 20px; }
+        .bar-wrapper { margin-bottom: 15px; }
+        .bar-label { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .bar-bg { background: #222; border-radius: 10px; height: 20px; overflow: hidden; }
+        .bar-fill { height: 100%; width: 0%; transition: width 1s ease-out; }
+
+        .signature { text-align: center; margin-top: 30px; font-size: 0.8em; color: var(--gold); opacity: 0.7; }
+
+        @media (max-width: 390px) {
+            .teams-grid { grid-template-columns: 1fr; }
+            .stadium-card { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="stadium-card">
+    <h1>¿Qué equipo prefieres?</h1>
+    <p class="subtitle">Por favor complete todos los campos para votar</p>
+
+    <form id="surveyForm">
+        <div class="form-group">
+            <label>¿Cuál es tu nombre? *</label>
+            <input type="text" id="name" placeholder="Nombre y apellido" autocomplete="off">
+            <div id="nameError" class="error-msg">Ingrese solo letras y espacios</div>
+        </div>
+
+        <div class="form-group">
+            <label>¿Cuántos años tienes? *</label>
+            <input type="text" id="age" placeholder="Edad" inputmode = "numeric" autocomplete="off">
+            <div id="ageError" class="error-msg">Ingrese solo números</div>
+        </div>
+
+        <div class="form-group">
+            <label>¿Qué equipo prefieres? *</label>
+            <div class="teams-grid">
+                <label>
+                    <input type="radio" name="team" value="madrid">
+                    <div class="team-option madrid">Real Madrid</div>
+                </label>
+                <label>
+                    <input type="radio" name="team" value="barca">
+                    <div class="team-option barca">Barcelona</div>
+                </label>
+            </div>
+        </div>
+
+        <button type="button" id="submitBtn" disabled>Enviar Voto</button>
+    </form>
+
+    <div class="chart-container">
+        <h3>Marcador en Vivo</h3>
+        <div class="bar-wrapper">
+            <div class="bar-label"><span>Real Madrid</span> <span id="countMadrid">0</span></div>
+            <div class="bar-bg"><div id="barMadrid" class="bar-fill" style="background: var(--madrid-color);"></div></div>
+        </div>
+        <div class="bar-wrapper">
+            <div class="bar-label"><span>Barcelona</span> <span id="countBarca">0</span></div>
+            <div class="bar-bg"><div id="barBarca" class="bar-fill" style="background: var(--barca-color);"></div></div>
+        </div>
+    </div>
+
+    <div class="signature">Encuesta elaborada por Brayan Alcibar</div>
+</div>
+
+<script>
+    const form = document.getElementById('surveyForm');
+    const nameInput = document.getElementById('name');
+    const ageInput = document.getElementById('age');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Bloqueo de teclas para el Nombre (Solo letras y espacios)
+nameInput.addEventListener('keypress', (e) => {
+    const reg = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+    if (!reg.test(e.key)) e.preventDefault();
+});
+
+// Bloqueo de teclas para la Edad (Solo números)
+ageInput.addEventListener('keypress', (e) => {
+    if (!/[0-9]/.test(e.key)) e.preventDefault();
+});
+
+    
+    // Datos iniciales
+    let votes = { madrid: 0, barca: 0 }; // Algunos datos de ejemplo
+
+    function validate() {
+        const nameVal = nameInput.value;
+        const ageVal = ageInput.value;
+        const teamSelected = document.querySelector('input[name="team"]:checked');
+        
+        const isNameValid = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(nameVal) && nameVal.trim() !== "";
+        const isAgeValid = /^[0-9]+$/.test(ageVal) && ageVal.trim() !== "";
+        
+        document.getElementById('nameError').style.display = (nameVal && !isNameValid) ? 'block' : 'none';
+        document.getElementById('ageError').style.display = (ageVal && !isAgeValid) ? 'block' : 'none';
+
+        submitBtn.disabled = !(isNameValid && isAgeValid && teamSelected);
+    }
+
+    function updateChart() {
+    const total = votes.madrid + votes.barca;
+    
+    // Agregamos esta validación para evitar el error de "división por cero"
+    const pMadrid = total === 0 ? 0 : (votes.madrid / total) * 100;
+    const pBarca = total === 0 ? 0 : (votes.barca / total) * 100;
+
+    document.getElementById('barMadrid').style.width = pMadrid + '%';
+    document.getElementById('barBarca').style.width = pBarca + '%';
+    document.getElementById('countMadrid').innerText = votes.madrid;
+    document.getElementById('countBarca').innerText = votes.barca;
+}
+
+    }
+
+    form.addEventListener('input', validate);
+
+    submitBtn.addEventListener('click', () => {
+        const selected = document.querySelector('input[name="team"]:checked').value;
+        votes[selected]++;
+        updateChart();
+        alert("¡Voto registrado con éxito!");
+        form.reset();
+        validate();
+    });
+
+    // Inicializar gráfico
+    updateChart();
+</script>
+
+</body>
+</html>
